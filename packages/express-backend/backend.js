@@ -1,5 +1,6 @@
 // backend.js
 import express from 'express';
+import cors from "cors";
 
 const app = express();
 const port = 8000;
@@ -35,6 +36,7 @@ const deleteUserById = (id) => {
   return false;
 };
 
+app.use(cors());
 app.use(express.json());
 
 app.get("/users", (req, res) => {
@@ -55,9 +57,10 @@ app.listen(port, () => {
 });
 
 app.post("/users", (req, res) => {
-  const userToAdd = req.body;
-  const addedUser = addUser(userToAdd);
-  res.status(201).send(addedUser); // 201 Created
+  const user = req.body;
+  user._id = generateID(); // Assign server-generated ID
+  users.push(user);
+  res.status(201).json({ user }); // 201 Created
 });
 
 app.delete("/users/:id", (req, res) => {
@@ -69,3 +72,7 @@ app.delete("/users/:id", (req, res) => {
     res.status(404).send("User not found.");
   }
 });
+
+function generateID() {
+  return Math.random().toString(36).substr(2, 9); // Random string
+}
