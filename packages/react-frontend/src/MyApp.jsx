@@ -1,5 +1,5 @@
 // src/MyApp.jsx
-import React, { useState } from "react";
+import React, {useState, useEffect} from 'react';
 import Table from "./Table";
 import Form from "./Form";
 
@@ -7,12 +7,53 @@ function MyApp() {
 
   const [characters, setCharacters] = useState([]);
 
+  useEffect(() => {
+    fetchUsers()
+      .then((res) => res.json())
+      .then((json) => setCharacters(json["users_list"]))
+      .catch((error) => { console.log(error); });
+  }, [] );
+
+  function fetchUsers() {
+    const promise = fetch("http://localhost:8000/users");
+    return promise;
+  }
+  
+  function postUser(person) {
+    const promise = fetch("Http://localhost:8000/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(person),
+    });
+
+    return promise;
+  }
+
   function removeOneCharacter(index) {
     const updated = characters.filter((character, i) => {
       return i !== index;
     });
     setCharacters(updated);
   } 
+  
+  function updateList(person){
+    postUser(person)
+    .then((res) => {
+      if (res.status === 201) {
+        return res.json();
+      } else {
+        throw new Error("Failed to create user");
+      }
+    })
+    .then((data) => {
+      setCharacters([...characters, data.user]); // include full object returned by backend
+    })
+    .catch((error) => {
+      console.error("Error adding user:", error);
+    });
+  }
 
   return (
     <div className="container">
@@ -23,10 +64,6 @@ function MyApp() {
     <Form handleSubmit={updateList} />
     </div>
   );
-
-  function updateList(person){
-    setCharacters([...characters, person]);
-  }
 }
 
 export default MyApp;

@@ -2,43 +2,41 @@
 import React, { useState } from "react";
 
 function Form(props) {
-  const [person, setPerson] = useState({
-    name: "",
-    job: ""
-  });
+  const initialState = { name: "", job: "" };
+  const [formData, setFormData] = useState(initialState);
 
   function handleChange(event) {
     const { name, value } = event.target;
-    if (name === "job")
-      setPerson({ name: person["name"], job: value });
-    else
-      setPerson({ name: value, job: person["job"] });
+
+    setFormData({
+      ...formData,
+      [name]: value
+    });
   }
 
-  function submitForm() {
-    props.handleSubmit(person);
-    setPerson({ name: "", job: "" });
+  function submitForm(event) {
+    event.preventDefault();
+    props.handleSubmit(formData);
+    setFormData(initialState); // Reset the form
   }
 
   return (
-    <form>
-      <label htmlFor="name">Name</label>
+    <form onSubmit={submitForm}>
+      <label>Name</label>
       <input
         type="text"
         name="name"
-        id="name"
-        value={person.name}
+        value={formData.name}
         onChange={handleChange}
       />
-      <label htmlFor="job">Job</label>
+      <label>Job</label>
       <input
         type="text"
         name="job"
-        id="job"
-        value={person.job}
+        value={formData.job}
         onChange={handleChange}
       />
-      <input type="button" value="Submit" onClick={submitForm} />
+      <button type="submit">Add</button>
     </form>
   );
 }
