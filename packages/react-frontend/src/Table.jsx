@@ -15,15 +15,15 @@ function TableHeader() {
 }
   
 function TableBody(props) {
-    const rows = props.characterData.map((row, index) => {
+    const rows = props.characterData.map((row) => {
       return (
-        <tr key={index}>
-        <td>{row.id}</td> 
-        <td>{row.name}</td>
-        <td>{row.job}</td>
+        <tr key={row._id}>
+          <td>{row._id}</td>
+          <td>{row.name}</td>
+          <td>{row.job}</td>
         <td>
             <button 
-              onClick={() => props.removeCharacter(index)}
+              onClick={() => props.removeCharacter(row._id)}
               style={{
                 backgroundColor: '#d71f1f', 
                 color: 'white',
@@ -45,7 +45,7 @@ function TableBody(props) {
           {rows}
          </tbody>
      );
-  }
+}
 
 function Table(props) {
     return (

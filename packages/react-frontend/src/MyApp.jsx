@@ -1,26 +1,29 @@
 // src/MyApp.jsx
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import Table from "./Table";
 import Form from "./Form";
 
 function MyApp() {
-
   const [characters, setCharacters] = useState([]);
+  const [error, setError] = useState("");  // Error state
 
   useEffect(() => {
     fetchUsers()
       .then((res) => res.json())
       .then((json) => setCharacters(json["users_list"]))
-      .catch((error) => { console.log(error); });
-  }, [] );
+      .catch((error) => { 
+        console.log(error);
+        setError("Failed to load users. Please try again later.");
+      });
+  }, []);
 
   function fetchUsers() {
     const promise = fetch("http://localhost:8000/users");
     return promise;
   }
-  
+
   function postUser(person) {
-    const promise = fetch("Http://localhost:8000/users", {
+    const promise = fetch("http://localhost:8000/users", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -31,37 +34,52 @@ function MyApp() {
     return promise;
   }
 
-  function removeOneCharacter(index) {
-    const updated = characters.filter((character, i) => {
-      return i !== index;
-    });
-    setCharacters(updated);
-  } 
-  
-  function updateList(person){
-    postUser(person)
-    .then((res) => {
-      if (res.status === 201) {
-        return res.json();
-      } else {
-        throw new Error("Failed to create user");
-      }
+  function removeOneCharacter(id) {
+    fetch(`http://localhost:8000/users/${id}`, {
+      method: "DELETE",
     })
-    .then((data) => {
-      setCharacters([...characters, data.user]); // include full object returned by backend
-    })
-    .catch((error) => {
-      console.error("Error adding user:", error);
-    });
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to delete user");
+        }
+        // Remove user from local state
+        const updated = characters.filter((character) => character._id !== id);
+        setCharacters(updated);
+      })
+      .catch((error) => {
+        console.error("Error deleting user:", error);
+        setError("Failed to delete user. Please try again later.");
+      });
   }
+
+  function updateList(person) {
+    console.log(person);  // Log the person data to see if it's being passed correctly
+    postUser(person)
+      .then((res) => {
+        if (res.status === 201) {
+          return res.json();
+        } else {
+          throw new Error("Failed to create user");
+        }
+      })
+      .then((data) => {
+        setCharacters([...characters, data]);  // Update the state with the new user
+      })
+      .catch((error) => {
+        console.error("Error adding user:", error);
+        setError("Failed to add user. Please try again later.");
+      });
+  }
+
 
   return (
     <div className="container">
-    <Table
-      characterData={characters}
-      removeCharacter={removeOneCharacter}
-    />
-    <Form handleSubmit={updateList} />
+      {error && <div className="error-message">{error}</div>}  {/* Error message */}
+      <Table
+        characterData={characters}
+        removeCharacter={removeOneCharacter}
+      />
+      <Form handleSubmit={updateList} />
     </div>
   );
 }
