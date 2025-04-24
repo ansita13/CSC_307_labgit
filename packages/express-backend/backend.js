@@ -21,16 +21,14 @@ app.use(express.json());
 
 app.get("/users", async (req, res) => {
   try {
-    const users = await userService.getUsers();  // Get all users
-    if (!users || users.length === 0) {
-      return res.status(404).json({ error: "No users found." });
-    }
-    res.json(users);
+    const users = await userService.getAllUsers();
+    res.status(200).json(users); // Always return 200 with the list (even if empty)
   } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ error: `Failed to retrieve users: ${error.message}` });
+    console.error("Error retrieving users:", error);
+    res.status(500).json({ error: "Failed to retrieve users." });
   }
 });
+
 
 app.post("/users", async (req, res) => {
   try {
@@ -45,4 +43,18 @@ app.post("/users", async (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
+});
+
+app.delete("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedUser = await userService.deleteUserById(id);
+    if (!deletedUser) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    res.status(200).json({ message: "User deleted." });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: `Failed to delete user: ${error.message}` });
+  }
 });
