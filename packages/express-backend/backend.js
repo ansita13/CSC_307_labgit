@@ -21,7 +21,7 @@ app.use(express.json());
 
 app.get("/users", async (req, res) => {
   try {
-    const users = await userService.getAllUsers();
+    const users = await userService.getUsers();
     res.status(200).json(users); // Always return 200 with the list (even if empty)
   } catch (error) {
     console.error("Error retrieving users:", error);
